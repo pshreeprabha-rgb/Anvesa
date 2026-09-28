@@ -1,0 +1,32 @@
+# Python Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python Cache & Compiled Files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Experiment Outputs & Local Data (per Repository Rules)
+results/
+data/generated/
+
+# Testing & Coverage Outputs
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Distribution & Build Outputs
+build/
+dist/
+*.egg-info/
