@@ -1,0 +1,6 @@
+step,step_name,node_state,task_outcome
+1,step_1_healthy,healthy,SUCCESS
+2,step_2_failure,failed,NOT SCHEDULED
+3,step_3_failed,failed,NOT SCHEDULED
+4,step_4_recovery,recovered,SUCCESS
+5,step_5_healthy,healthy,SUCCESS
