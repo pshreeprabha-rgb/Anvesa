@@ -1,4 +1,5 @@
 import os
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -10,18 +11,22 @@ def generate_experiment_plots(
     Reads experiment results from CSV and generates comparison plots across unreliability levels:
     - Average Latency (ms) vs. Unreliability Level (%)
     - Completion Rate (%) vs. Unreliability Level (%)
+
+    Raises:
+        ValueError: If the results file does not exist or required columns are missing.
     """
     if not os.path.exists(results_csv_path):
-        print(f"[Member 4 Plots] Results file not found: {results_csv_path}")
-        return
+        raise ValueError(f"Results file not found: {results_csv_path}")
 
     df = pd.read_csv(results_csv_path)
-    os.makedirs(output_dir, exist_ok=True)
 
     required_cols = {"policy", "unreliability_level", "avg_latency_ms", "completion_rate"}
     if not required_cols.issubset(df.columns):
-        print(f"[Member 4 Plots] Missing required columns in CSV: {required_cols - set(df.columns)}")
-        return
+        raise ValueError(
+            f"Missing required columns in CSV: {required_cols - set(df.columns)}"
+        )
+
+    os.makedirs(output_dir, exist_ok=True)
 
     # 1. Latency vs Unreliability
     plt.figure(figsize=(8, 5))
