@@ -1,16 +1,19 @@
+import sys
+from pathlib import Path
 
-from Simulation.node import Node
-from Simulation.task import Task
-from Simulation.resource_report import ResourceReport
-from Simulation.unreliable_report import add_noise
-from Simulation.execution import execute_task
-from Simulation.scheduler import find_node_from_reports
-from Simulation.simulation_config import SimulationConfig
-
-import random
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import csv
+import random
+
 import matplotlib.pyplot as plt
 
+from Simulation.execution import execute_task
+from Simulation.node import Node
+from Simulation.resource_report import ResourceReport
+from Simulation.scheduler import find_node_from_reports
+from Simulation.simulation_config import SimulationConfig
+from Simulation.task import Task
+from Simulation.unreliable_report import add_noise
 
 # ============================================================
 # SETTINGS

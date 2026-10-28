@@ -2,13 +2,12 @@
 import csv
 import random
 
-from Simulation.node import Node
-from Simulation.task import Task
-from Simulation.resource_report import ResourceReport
-from Simulation.unreliable_report import add_noise
 from Simulation.execution import execute_task
+from Simulation.node import Node
+from Simulation.resource_report import ResourceReport
 from Simulation.scheduler import find_node_from_reports
-
+from Simulation.task import Task
+from Simulation.unreliable_report import add_noise
 
 NUMBER_OF_TRIALS = 20
 NUMBER_OF_NODES = 10

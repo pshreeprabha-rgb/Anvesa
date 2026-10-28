@@ -2,8 +2,8 @@
 import csv
 
 from Simulation.node import Node
-from Simulation.resource_state import capture_ground_truth
 from Simulation.resource_report import ResourceReport
+from Simulation.resource_state import capture_ground_truth
 from Simulation.unreliable_report import (
     add_noise,
     create_stale_report,

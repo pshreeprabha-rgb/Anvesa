@@ -1,6 +1,7 @@
 
 from Simulation.task import create_workload_task
 
+
 def main():
     workload_types = [
         "compute-heavy",

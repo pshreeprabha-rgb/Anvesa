@@ -1,10 +1,10 @@
 
-from Simulation.node import Node
-from Simulation.task import Task
-from Simulation.resource_report import ResourceReport
-from Simulation.unreliable_report import create_stale_report
-from Simulation.scheduler import find_node_from_reports
 from Simulation.execution import execute_task
+from Simulation.node import Node
+from Simulation.resource_report import ResourceReport
+from Simulation.scheduler import find_node_from_reports
+from Simulation.task import Task
+from Simulation.unreliable_report import create_stale_report
 
 
 def run_case(report):

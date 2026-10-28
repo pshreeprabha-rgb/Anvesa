@@ -1,11 +1,11 @@
 
 import csv
 
+from Simulation.execution import execute_task
 from Simulation.node import Node, fail_node, recover_node
-from Simulation.task import Task
 from Simulation.resource_report import ResourceReport
 from Simulation.scheduler import find_node_from_reports
-from Simulation.execution import execute_task
+from Simulation.task import Task
 
 
 def main():

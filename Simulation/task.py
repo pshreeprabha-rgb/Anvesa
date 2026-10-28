@@ -1,6 +1,8 @@
+from typing import ClassVar
+
 
 class Task:
-    VALID_TYPES = {
+    VALID_TYPES: ClassVar[set[str]] = {
         "computation",
         "data_processing",
         "sensor",

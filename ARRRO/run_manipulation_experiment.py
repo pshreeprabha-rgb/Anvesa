@@ -1,12 +1,12 @@
 
 import csv
 
-from Simulation.node import Node
-from Simulation.task import Task
-from Simulation.resource_report import ResourceReport
-from Simulation.unreliable_report import manipulate_report
-from Simulation.scheduler import find_node_from_reports
 from Simulation.execution import execute_task
+from Simulation.node import Node
+from Simulation.resource_report import ResourceReport
+from Simulation.scheduler import find_node_from_reports
+from Simulation.task import Task
+from Simulation.unreliable_report import manipulate_report
 
 
 def run_trial(use_manipulated_report):
