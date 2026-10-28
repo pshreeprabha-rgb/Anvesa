@@ -20,7 +20,12 @@ def generate_experiment_plots(
 
     df = pd.read_csv(results_csv_path)
 
-    required_cols = {"policy", "unreliability_level", "avg_latency_ms", "completion_rate"}
+    required_cols = {
+        "policy",
+        "unreliability_level",
+        "avg_latency_ms",
+        "completion_rate",
+    }
     if not required_cols.issubset(df.columns):
         raise ValueError(
             f"Missing required columns in CSV: {required_cols - set(df.columns)}"
