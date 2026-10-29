@@ -4,6 +4,12 @@ import os
 import yaml
 
 # Import shared schemas
+from src.common.schemas import (
+    ExecutionResult,
+    PlacementDecision,
+    ReliabilityEstimate,
+    ResourceReport,
+)
 
 
 def load_config(config_path: str) -> dict:
@@ -12,6 +18,14 @@ def load_config(config_path: str) -> dict:
         raise FileNotFoundError(f"Configuration file not found: {config_path}")
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
+
+
+def validate_contracts():
+    """Ensure shared contract models are importable and constructible."""
+    assert ResourceReport is not None
+    assert ReliabilityEstimate is not None
+    assert PlacementDecision is not None
+    assert ExecutionResult is not None
 
 
 def run_experiment(config_path: str):
