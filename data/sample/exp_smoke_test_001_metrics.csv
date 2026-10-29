@@ -1,0 +1,5 @@
+policy,total_tasks,completion_rate,failure_rate,avg_latency_ms,total_energy_j,mean_prediction_error,mean_cpu,peak_cpu,mean_ram,peak_ram,mean_bandwidth,peak_bandwidth
+arrro,50.0,46.0,54.0,54.67,3280.21,1.44,0.4194,0.7439,0.4524,0.6484,0.2935,0.4994
+round_robin,50.0,48.0,52.0,53.39,3203.11,1.41,0.4444,0.7092,0.431,0.6447,0.3136,0.4977
+greedy,50.0,42.0,58.0,59.13,3547.8,1.54,0.4489,0.7428,0.432,0.6244,0.2924,0.487
+random,50.0,42.0,58.0,59.78,3586.75,1.28,0.4506,0.7479,0.4689,0.6485,0.3105,0.4877

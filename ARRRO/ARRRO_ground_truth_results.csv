@@ -1,5 +1,0 @@
-scenario,node_id,actual_cpu,reported_cpu,actual_ram,reported_ram,actual_bandwidth,reported_bandwidth,actual_latency,reported_latency,actual_queue_length,reported_queue_length,reported_at,sequence
-fresh,Node-1,80,80,60,60,100,100,10,10,2,2,2,2
-noisy_20_percent,Node-1,80,84.25,60,54.6,100,116.82,10,9.8,2,2,2,2
-stale,Node-1,80,40,60,40,100,60,10,20,2,5,1,1
-manipulated_30_percent,Node-1,80,56.0,60,42.0,100,70.0,10,10,2,2,2,2

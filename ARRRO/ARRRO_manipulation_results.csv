@@ -1,3 +1,0 @@
-scenario,trials,successful_tasks,not_scheduled,success_rate_percentage
-normal_reports,20,20,0,100.0
-manipulated_reports,20,0,20,0.0

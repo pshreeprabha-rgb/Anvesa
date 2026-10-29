@@ -1,6 +1,0 @@
-task_id,workload_phase,workload_type,selected_node,outcome
-Task-1,light_phase,latency-sensitive,Node-1,SUCCESS
-Task-2,heavy_phase,mixed-resource,Node-2,SUCCESS
-Task-3,heavy_phase,compute-heavy,Node-2,SUCCESS
-Task-4,heavy_phase,memory-heavy,Node-2,SUCCESS
-Task-5,heavy_phase,bandwidth-heavy,Node-2,SUCCESS
