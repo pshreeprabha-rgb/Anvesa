@@ -34,3 +34,7 @@ def test_ground_truth_is_preserved_when_report_is_manipulated():
     assert manipulated_report.ram == 42
     assert node.cpu == 80
     assert node.ram == 60
+    assert manipulated_report.bandwidth == 70
+
+    assert report.cpu == 80
+    assert report.ram == 60
