@@ -4,26 +4,31 @@ venv/
 ENV/
 env/
 
-# Python Cache & Compiled Files
+# Python Cache & Compiled Bytecode
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 
-# Experiment Outputs & Local Data (per Repository Rules)
-results/
-data/generated/
-
-# Testing & Coverage Outputs
+# Linter & Test Caches
 .pytest_cache/
+.ruff_cache/
 .coverage
 htmlcov/
 
-# IDE & Editor Settings
+# Experiment Runs & Generated Outputs (Rule 6: No generated dumps)
+results/
+data/generated/
+data/sample/*.csv
+*.csv
+*.png
+
+# IDE, Editor & Terminal Swap Files
 .vscode/
 .idea/
 *.swp
 *.swo
+*.un~
 .DS_Store
 
 # Distribution & Build Outputs
