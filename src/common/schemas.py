@@ -8,6 +8,7 @@ class BaseContract(BaseModel):
 
 # 1. Resource Report (Owner: Member 1 -> Consumed by: Member 2)
 class ResourceMetrics(BaseModel):
+    model_config = ConfigDict(allow_inf_nan=False)
     cpu_pct: float
     ram_pct: float
     bandwidth_mbps: float
