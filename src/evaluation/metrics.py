@@ -1,11 +1,12 @@
-from typing import Any, Dict, List
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
 
 def compute_experiment_metrics(
-    execution_results: List[Dict[str, Any]]
-) -> Dict[str, float]:
+    execution_results: list[dict[str, Any]],
+) -> dict[str, float]:
     """Computes key performance indicators across all executed tasks:
 
     - Average Latency (ms)
@@ -35,9 +36,7 @@ def compute_experiment_metrics(
     actual_latencies = [
         res["actual"].get("latency_ms", 0.0) for res in execution_results
     ]
-    actual_energies = [
-        res["actual"].get("energy_j", 0.0) for res in execution_results
-    ]
+    actual_energies = [res["actual"].get("energy_j", 0.0) for res in execution_results]
 
     avg_latency = float(np.mean(actual_latencies)) if actual_latencies else 0.0
     total_energy = float(np.sum(actual_energies)) if actual_energies else 0.0
@@ -64,7 +63,7 @@ def compute_experiment_metrics(
     }
 
 
-def save_metrics_to_csv(metrics: Dict[str, float], output_path: str):
+def save_metrics_to_csv(metrics: dict[str, float], output_path: str):
     """Saves calculated metrics to a CSV file."""
     df = pd.DataFrame([metrics])
     df.to_csv(output_path, index=False)
