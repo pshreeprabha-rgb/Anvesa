@@ -3,7 +3,6 @@ import json
 
 from performance_model import calculate_performance_cost
 
-
 # -----------------------------------------
 # 1. LOAD CONFIGURATION
 # -----------------------------------------
@@ -187,11 +186,7 @@ if __name__ == "__main__":
 
     # Sample data for the current standalone demonstration.
     # Later, these can be replaced with Atlas and Sentinel outputs.
-    from demo_inputs import (
-        nodes,
-        task,
-        reliability_estimates
-    )
+    from demo_inputs import nodes, reliability_estimates, task
 
     config = load_config()
 

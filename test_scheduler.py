@@ -1,12 +1,12 @@
 import unittest
 
+from demo_inputs import nodes, reliability_estimates, task
 from vector_scheduler import (
-    filter_feasible_nodes,
     calculate_task_risk,
+    filter_feasible_nodes,
+    load_config,
     schedule_task,
-    load_config
 )
-from demo_inputs import nodes, task, reliability_estimates
 
 
 class TestVectorScheduler(unittest.TestCase):

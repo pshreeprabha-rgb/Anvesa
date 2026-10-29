@@ -1,12 +1,12 @@
 
-from demo_inputs import nodes, task, reliability_estimates
-from vector_scheduler import (
-    filter_feasible_nodes,
-    calculate_task_risk,
-    load_config,
-    schedule_task
-)
+from demo_inputs import nodes, reliability_estimates, task
 from performance_model import calculate_performance_cost
+from vector_scheduler import (
+    calculate_task_risk,
+    filter_feasible_nodes,
+    load_config,
+    schedule_task,
+)
 
 
 def run_scenario(scenario_name, scenario_nodes, scenario_task,
