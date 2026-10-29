@@ -1,6 +1,5 @@
 """Reliability tracker for edge nodes in ARRRO."""
 
-import math
 from datetime import datetime, timezone
 from typing import ClassVar
 
@@ -120,12 +119,7 @@ class ReliabilityTracker:
             if raw_k not in res_data:
                 continue
 
-            raw_val = res_data[raw_k]
-            val = (
-                float(raw_val)
-                if raw_val is not None and not math.isnan(float(raw_val))
-                else 0.0
-            )
+            val = float(res_data[raw_k])
 
             hist = self.value_history[node_id][short_k]
             hist.append(val)
@@ -173,7 +167,7 @@ class ReliabilityTracker:
             # Uncertainty rises with sparsity (cold-start), staleness, temporal volatility, and recent errors
             uncert_raw = (
                 0.65 * sparsity
-                + 0.20 * staleness
+                + 0.15 * staleness
                 + 0.10 * temporal
                 + 0.10 * recent_err
             )

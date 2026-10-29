@@ -7,7 +7,7 @@ The `ReliabilityTracker` produces resource-level reliability and uncertainty met
 - **Staleness**: Computed as `(current_time - reported_at) / max_age_sec`, capped at 1.0.
 - **History Error**: Long-run mean relative prediction error across tasks run on the node.
 - **Temporal Instability**: Coefficient of variation ($CV = \sigma / \mu$) calculated across the sliding window of resource values.
-- **Cross-Resource Inconsistency**: Logical violations evaluated across resource couplings (low bandwidth with microsecond latency, high CPU with zero queue, or idle CPU with high queue).
+- **Cross-Resource Inconsistency**: Logical violations evaluated across resource couplings (bandwidth below 1 Mbps with latency below 2 ms, high CPU with zero queue, or idle CPU with high queue).
 - **Recent Prediction Error**: Rolling average error from the last 3 execution feedback reports.
 
 ## 3. Smoothing and Asymmetric Recovery
