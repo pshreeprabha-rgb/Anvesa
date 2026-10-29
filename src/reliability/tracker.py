@@ -1,107 +1,135 @@
+"""Reliability tracker for edge nodes in ARRRO."""
+
+from datetime import datetime, timezone
+
 import numpy as np
-from typing import Dict, List
-from src.common.schemas import ResourceReport, ReliabilityEstimate, ResourceScore, ExecutionResult
-from src.reliability.signals import calculate_staleness, calculate_relative_error, calculate_temporal_instability
+
+from src.common.schemas import (
+    ExecutionResult,
+    ReliabilityEstimate,
+    ResourceReport,
+    ResourceScore,
+)
+from src.reliability.signals import (
+    calculate_relative_error,
+    calculate_staleness,
+    calculate_temporal_instability,
+)
+
 
 class ReliabilityTracker:
-    def __init__(self, history_window: int = 5):
-        self.history_window = history_window
-        # History storage per node and resource
-        self.value_history: Dict[str, Dict[str, List[float]]] = {}
-        self.error_history: Dict[str, Dict[str, List[float]]] = {}
+    """Tracks and computes reliability scores and estimates per node."""
 
-        # Default signal weights
+    def __init__(self, history_window: int = 5) -> None:
+        self.history_window = history_window
+        self.value_history: dict[str, dict[str, list[float]]] = {}
+        self.error_history: dict[str, dict[str, list[float]]] = {}
+
         self.weights = {
-            "w_error": 0.40,
-            "w_stale": 0.30,
-            "w_instability": 0.30,
-            "u_stale": 0.35,
-            "u_error": 0.35,
-            "u_cold": 0.30
+            "staleness": 0.4,
+            "prediction_error": 0.4,
+            "temporal_instability": 0.2,
         }
 
-    def _init_node_storage(self, node_id: str, resource_keys: List[str]):
+    def _init_node_storage(self, node_id: str, resource_keys: list[str]) -> None:
         if node_id not in self.value_history:
             self.value_history[node_id] = {r: [] for r in resource_keys}
             self.error_history[node_id] = {r: [] for r in resource_keys}
+        else:
+            for r in resource_keys:
+                self.value_history[node_id].setdefault(r, [])
+                self.error_history[node_id].setdefault(r, [])
 
-    def process_report(self, report: ResourceReport, current_time: str) -> ReliabilityEstimate:
-        """Processes a ResourceReport and returns a canonical ReliabilityEstimate."""
+    def process_report(
+        self, report: ResourceReport, current_time_str: str | None = None
+    ) -> ReliabilityEstimate:
+        """Processes an incoming ResourceReport and produces a ReliabilityEstimate."""
         node_id = report.node_id
-        resources = report.resources
-        self._init_node_storage(node_id, list(resources.keys()))
+        res_data = (
+            report.resources.model_dump()
+            if hasattr(report.resources, "model_dump")
+            else dict(report.resources)
+        )
 
-        resource_scores: Dict[str, ResourceScore] = {}
-        signals_breakdown: Dict[str, Dict[str, float]] = {}
+        reported_at = res_data.get("reported_at", report.timestamp)
+        now_str = (
+            current_time_str
+            if current_time_str
+            else datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
 
-        for res_name, res_value in resources.items():
-            # Update rolling value history
-            v_hist = self.value_history[node_id][res_name]
-            v_hist.append(res_value)
-            if len(v_hist) > self.history_window:
-                v_hist.pop(0)
+        res_keys = [
+            k
+            for k in res_data
+            if k != "reported_at" and isinstance(res_data[k], (int, float))
+        ]
+        self._init_node_storage(node_id, res_keys)
 
-            # Compute Signals
-            staleness = calculate_staleness(report.reported_at, current_time)
-            instability = calculate_temporal_instability(v_hist)
-            
-            err_hist = self.error_history[node_id].get(res_name, [])
-            avg_hist_error = float(np.mean(err_hist)) if err_hist else 0.0
+        key_mapping = {
+            "cpu_pct": "cpu",
+            "ram_pct": "ram",
+            "bandwidth_mbps": "bandwidth",
+            "latency_ms": "latency",
+            "queue_length": "queue_length",
+        }
+        resource_scores: dict[str, ResourceScore] = {}
+        resource_signals: dict[str, dict[str, float]] = {}
 
-            # Calculate History Support (Cold-start mitigation)
-            history_support = min(len(err_hist) / self.history_window, 1.0)
+        for k in res_keys:
+            val = float(res_data[k])
+            hist = self.value_history[node_id][k]
+            hist.append(val)
+            if len(hist) > self.history_window:
+                hist.pop(0)
 
-            # Calculate Reliability B(i,r,t)
-            w = self.weights
-            b_val = (
-                w["w_error"] * (1.0 - avg_hist_error) +
-                w["w_stale"] * (1.0 - staleness) +
-                w["w_instability"] * (1.0 - instability)
+            staleness = calculate_staleness(reported_at, now_str)
+            temporal = calculate_temporal_instability(hist)
+
+            err_hist = self.error_history[node_id][k]
+            mean_err = float(np.mean(err_hist)) if err_hist else 0.0
+
+            penalty = (
+                self.weights["staleness"] * staleness
+                + self.weights["prediction_error"] * mean_err
+                + self.weights["temporal_instability"] * temporal
             )
-            reliability = float(np.clip(b_val, 0.0, 1.0))
+            score = max(0.0, min(1.0, 1.0 - penalty))
 
-            # Calculate Uncertainty U(i,r,t)
-            u_val = (
-                w["u_stale"] * staleness +
-                w["u_error"] * avg_hist_error +
-                w["u_cold"] * (1.0 - history_support)
+            # Uncertainty drops as more samples are gathered
+            uncertainty = max(0.05, 1.0 - (len(hist) / self.history_window))
+
+            short_key = key_mapping.get(k, k)
+            resource_scores[short_key] = ResourceScore(
+                reliability=score,
+                uncertainty=uncertainty,
             )
-            uncertainty = float(np.clip(u_val, 0.0, 1.0))
-
-            resource_scores[res_name] = ResourceScore(
-                reliability=round(reliability, 2),
-                uncertainty=round(uncertainty, 2)
-            )
-
-            signals_breakdown[res_name] = {
-                "staleness": round(staleness, 2),
-                "temporal_instability": round(instability, 2),
-                "history_error": round(avg_hist_error, 2),
-                "history_support": round(history_support, 2)
+            resource_signals[short_key] = {
+                "staleness": float(staleness),
+                "prediction_error": mean_err,
+                "temporal_instability": float(temporal),
             }
 
         return ReliabilityEstimate(
-            schema_version="1.0",
+            timestamp=now_str,
             node_id=node_id,
-            timestamp=current_time,
             resources=resource_scores,
-            signals=signals_breakdown
+            signals=resource_signals,
         )
 
-    def process_execution_feedback(self, feedback: ExecutionResult):
-        """Updates internal historical error buffers using actual execution feedback."""
+    def record_feedback(self, feedback: ExecutionResult) -> None:
+        """Records ground-truth task execution outcome and updates prediction error."""
         node_id = feedback.node_id
-        actuals = feedback.actual
-        predicts = feedback.predicted
+        if not feedback.actual or not feedback.predicted:
+            return
 
-        self._init_node_storage(node_id, list(actuals.keys()))
+        res_keys = list(feedback.actual.keys())
+        self._init_node_storage(node_id, res_keys)
 
-        for res_name, actual_val in actuals.items():
-            if res_name in predicts:
-                pred_val = predicts[res_name]
-                err = calculate_relative_error(pred_val, actual_val)
-                
-                err_buffer = self.error_history[node_id][res_name]
-                err_buffer.append(err)
-                if len(err_buffer) > self.history_window:
-                    err_buffer.pop(0)
+        for k, act_val in feedback.actual.items():
+            if k in feedback.predicted:
+                pred_val = feedback.predicted[k]
+                rel_err = calculate_relative_error(float(act_val), float(pred_val))
+                err_hist = self.error_history[node_id][k]
+                err_hist.append(rel_err)
+                if len(err_hist) > self.history_window:
+                    err_hist.pop(0)
