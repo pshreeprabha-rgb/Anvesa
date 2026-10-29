@@ -6,11 +6,15 @@ def add_noise(value, percentage=10, rng=None):
     if percentage < 0 or percentage > 100:
         raise ValueError("percentage must be between 0 and 100")
 
+    if percentage == 0:
+        return value
+
     if rng is None:
         rng = random
 
     noise = value * (percentage / 100)
     return round(rng.uniform(value - noise, value + noise), 2)
+
 
 
 

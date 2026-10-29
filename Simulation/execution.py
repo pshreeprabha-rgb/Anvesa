@@ -1,4 +1,6 @@
 def execute_task(node, task):
+    if getattr(node, "is_failed", False):
+        return "FAILED - node unavailable"
 
     if node.cpu < task.cpu_required:
         return "FAILED - insufficient CPU"

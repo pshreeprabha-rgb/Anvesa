@@ -3,7 +3,47 @@ import os
 
 import yaml
 
-# Import shared schemas
+try:
+    from src.common import schemas
+except ImportError as exc:
+    raise ImportError(
+        "Unable to import shared schemas from src.common.schemas"
+    ) from exc
+
+REQUIRED_SCHEMAS = (
+    "ResourceReport",
+    "ReliabilityEstimate",
+    "PlacementDecision",
+    "ExecutionResult",
+)
+
+missing_schemas = [
+    name for name in REQUIRED_SCHEMAS
+    if not hasattr(schemas, name)
+]
+
+if missing_schemas:
+    raise ImportError(
+        f"Missing shared schema classes: {', '.join(missing_schemas)}"
+    )
+
+REQUIRED_SCHEMAS = (
+    "ResourceReport",
+    "ReliabilityEstimate",
+    "PlacementDecision",
+    "ExecutionResult",
+)
+
+missing_schemas = [
+    name for name in REQUIRED_SCHEMAS
+    if not hasattr(schemas, name)
+]
+
+if missing_schemas:
+    raise ImportError(
+        f"Missing shared schema classes: {', '.join(missing_schemas)}"
+    )
+
 
 
 def load_config(config_path: str) -> dict:
