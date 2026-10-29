@@ -39,6 +39,11 @@ def main():
     assert manipulated_report.cpu == 56
     assert ground_truth["ram"] == 60
     assert manipulated_report.ram == 42
+    assert manipulated_report.bandwidth == 70
+
+    # The original report must remain unchanged.
+    assert report.cpu == 80
+    assert report.ram == 60
 
     # The actual node and saved snapshot must remain unchanged.
     assert node.cpu == 80
