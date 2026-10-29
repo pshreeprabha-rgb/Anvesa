@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # Base Schema for Schema Versioning
@@ -52,10 +52,15 @@ class ResourceReliability(BaseModel):
     uncertainty: float
 
 
+# Alias for compatibility with tracker imports
+ResourceScore = ResourceReliability
+
+
 class ReliabilityEstimate(BaseContract):
     node_id: str
     timestamp: str
     resources: dict[str, ResourceReliability]
+    signals: dict[str, dict[str, float]] = Field(default_factory=dict)
 
 
 # 4. Placement Decision (Owner: Member 3 -> Consumed by: Member 1/4)
@@ -65,6 +70,8 @@ class RankedCandidate(BaseModel):
 
 
 class PlacementDecision(BaseContract):
+    model_config = ConfigDict(populate_by_name=True)
+
     task_id: str
     selected_node: str
     decision_timestamp: str
@@ -73,7 +80,7 @@ class PlacementDecision(BaseContract):
     lambda_param: float = Field(..., alias="lambda")
     objective: float
     ranked_candidates: list[RankedCandidate]
-    reason_codes: list[str]
+    reason_codes: list[str] = Field(default_factory=list)
 
 
 # 5. Execution Result (Owner: Member 1/Execution -> Consumed by: Member 2)
