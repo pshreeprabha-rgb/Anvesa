@@ -1,4 +1,5 @@
-from datetime import UTC, datetime
+import math
+from datetime import datetime, timezone
 
 from src.common.schemas import (
     PlacementDecision,
@@ -19,8 +20,15 @@ def decide(
     lambda_value: float = 2.0,
     performance_weights: dict[str, float] | None = None,
 ) -> PlacementDecision:
-    if risk_limit < 0 or lambda_value < 0:
-        raise ValueError("Risk limit and lambda must be non-negative")
+    if (
+        not math.isfinite(risk_limit)
+        or not math.isfinite(lambda_value)
+        or risk_limit < 0
+        or lambda_value < 0
+    ):
+        raise ValueError(
+            "Risk limit and lambda must be finite and non-negative"
+        )
 
     if performance_weights is None:
         performance_weights = {
@@ -31,18 +39,44 @@ def decide(
             "bandwidth": 1.0,
         }
 
-    estimate_by_node = {estimate.node_id: estimate for estimate in estimates}
+    for name, weight in performance_weights.items():
+        if not math.isfinite(weight) or weight < 0:
+            raise ValueError(
+                f"Performance weight '{name}' must be finite "
+                "and non-negative"
+            )
+
+    estimate_by_node = {
+        estimate.node_id: estimate for estimate in estimates
+    }
     requirements = task.requirements
     weights = task.weights.model_dump()
 
     candidates = []
+
     for report in reports:
         resources = report.resources
+
+        resource_values = {
+            "cpu_pct": resources.cpu_pct,
+            "ram_pct": resources.ram_pct,
+            "bandwidth_mbps": resources.bandwidth_mbps,
+            "latency_ms": resources.latency_ms,
+            "queue_length": resources.queue_length,
+        }
+
+        for name, value in resource_values.items():
+            if not math.isfinite(value):
+                raise ValueError(
+                    f"Resource '{name}' must be finite "
+                    f"for node '{report.node_id}'"
+                )
 
         if (
             resources.cpu_pct < requirements.cpu_pct
             or resources.ram_pct < requirements.ram_pct
-            or resources.bandwidth_mbps < requirements.min_bandwidth_mbps
+            or resources.bandwidth_mbps
+            < requirements.min_bandwidth_mbps
             or resources.latency_ms > requirements.max_latency_ms
         ):
             continue
@@ -50,7 +84,8 @@ def decide(
         estimate = estimate_by_node.get(report.node_id)
         if estimate is None:
             raise ValueError(
-                f"Missing reliability estimates for node '{report.node_id}'"
+                f"Missing reliability estimates for node "
+                f"'{report.node_id}'"
             )
 
         node = {
@@ -76,11 +111,25 @@ def decide(
         )
         performance = calculate_cost(node, performance_weights)
 
+        if not math.isfinite(performance) or not math.isfinite(risk):
+            raise ValueError(
+                f"Calculated cost and risk must be finite "
+                f"for node '{report.node_id}'"
+            )
+
+        objective = performance + lambda_value * risk
+
+        if not math.isfinite(objective):
+            raise ValueError(
+                f"Calculated objective must be finite "
+                f"for node '{report.node_id}'"
+            )
+
         candidates.append({
             "node_id": report.node_id,
             "performance_cost": performance,
             "decision_risk": risk,
-            "objective": performance + lambda_value * risk,
+            "objective": objective,
         })
 
     if not candidates:
@@ -95,7 +144,8 @@ def decide(
         ranked = sorted(
             eligible,
             key=lambda candidate: (
-                candidate["objective"], candidate["node_id"]
+                candidate["objective"],
+                candidate["node_id"],
             ),
         )
         reason_codes = ["RISK_LIMIT_MET"]
@@ -115,7 +165,7 @@ def decide(
     return PlacementDecision(
         task_id=task.task_id,
         selected_node=selected["node_id"],
-        decision_timestamp=datetime.now(UTC).isoformat(),
+        decision_timestamp=datetime.now(timezone.utc).isoformat(),
         performance_cost=selected["performance_cost"],
         decision_risk=selected["decision_risk"],
         **{"lambda": lambda_value},
