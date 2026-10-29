@@ -1,6 +1,6 @@
+from src.scheduler.cost import calculate_cost
 from src.scheduler.feasibility import filter_feasible_nodes
 from src.scheduler.risk import calculate_task_risk
-from src.scheduler.cost import calculate_cost
 
 
 def decide(nodes, task, reliability_estimates, risk_limit,
