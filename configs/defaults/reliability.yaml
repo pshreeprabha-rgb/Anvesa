@@ -1,0 +1,18 @@
+history_window: 10
+recent_error_window: 3
+
+weights:
+  staleness: 0.45
+  history_error: 0.25
+  temporal_instability: 0.15
+  cross_resource_inconsistency: 0.15
+
+uncertainty_weights:
+  sparsity: 0.65
+  staleness: 0.15
+  temporal_instability: 0.10
+  recent_error: 0.10
+
+smoothing:
+  drop_step: 0.35
+  recovery_step: 0.10

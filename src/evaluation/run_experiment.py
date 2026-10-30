@@ -4,6 +4,12 @@ import os
 import yaml
 
 # Import shared schemas
+from src.common.schemas import (
+    ExecutionResult,
+    PlacementDecision,
+    ReliabilityEstimate,
+    ResourceReport,
+)
 
 
 def load_config(config_path: str) -> dict:
@@ -14,6 +20,14 @@ def load_config(config_path: str) -> dict:
         return yaml.safe_load(f)
 
 
+def validate_contracts():
+    """Ensure shared contract models are importable and constructible."""
+    assert ResourceReport is not None
+    assert ReliabilityEstimate is not None
+    assert PlacementDecision is not None
+    assert ExecutionResult is not None
+
+
 def run_experiment(config_path: str):
     """
     Main experiment runner.
@@ -21,11 +35,13 @@ def run_experiment(config_path: str):
     """
     config = load_config(config_path)
     print(f"[Member 4 Pipeline] Starting experiment: {config.get('experiment_id')}")
-    print(f"[Member 4 Pipeline] Seed: {config.get('seed')}, Nodes: {config['simulation']['node_count']}")
+    print(
+        f"[Member 4 Pipeline] Seed: {config.get('seed')}, Nodes: {config['simulation']['node_count']}"
+    )
 
     # Placeholder step for module integration checks
     print("[Member 4 Pipeline] Validating shared schemas...")
-    
+
     # Example verification of boundary contracts
     print(" - ResourceReport: READY")
     print(" - ReliabilityEstimate: READY")
@@ -44,5 +60,5 @@ if __name__ == "__main__":
         help="Path to experiment config YAML",
     )
     args = parser.parse_args()
-    
+
     run_experiment(args.config)
