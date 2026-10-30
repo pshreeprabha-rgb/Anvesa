@@ -5,12 +5,11 @@ seed: 42
 
 simulation:
   node_count: 10
-  task_count: 50
-  unreliability_level: 0.10  # 10% unreliability injection
+  task_count: 30
+  unreliability_level: 0.20  # probability a report is stale or manipulated
 
 scheduler:
   lambda_param: 2.0  # Risk trade-off parameter
 
 output:
-  results_dir: "data/sample"
-  save_csv: true
+  results_dir: "results/smoke"

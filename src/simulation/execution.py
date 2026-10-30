@@ -10,14 +10,20 @@ class ExecutionSimulator:
     def _fail(
         self, task: Task, node: dict[str, Any], t: float, reason: str
     ) -> ExecutionResult:
+        """A rejected task reveals the node's true utilization and bandwidth."""
         ts = sim_time_to_iso(t)
+        s = node["true_state"]
         return ExecutionResult(
             task_id=task.task_id,
             node_id=str(node["id"]),
             started_at=ts,
             completed_at=ts,
             success=False,
-            actual={},
+            actual={
+                "cpu_pct": s["cpu_pct"],
+                "ram_pct": s["ram_pct"],
+                "bandwidth_mbps": s["bandwidth_mbps"],
+            },
             predicted={},
             failure_reason=reason,
         )
