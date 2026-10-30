@@ -93,3 +93,4 @@ class ExecutionResult(BaseContract):
     success: bool
     actual: dict[str, float]
     predicted: dict[str, float]
+    failure_reason: str | None = None
