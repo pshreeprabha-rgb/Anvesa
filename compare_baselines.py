@@ -1,6 +1,7 @@
 
-from demo_inputs import nodes, reliability_estimates, task
 from performance_model import calculate_performance_cost
+
+from demo_inputs import nodes, reliability_estimates, task
 from vector_scheduler import (
     calculate_task_risk,
     filter_feasible_nodes,

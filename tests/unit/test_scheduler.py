@@ -10,7 +10,7 @@ from src.common.schemas import (
     TaskRequirements,
     TaskWeights,
 )
-from src.scheduler.feasibility import filter_feasible_nodes
+from src.scheduler.feasibility import is_feasible
 from src.scheduler.risk import calculate_task_risk
 from src.scheduler.scheduler import decide
 
@@ -84,27 +84,40 @@ def sample_data():
 def test_feasibility_filters_nodes():
     reports, _ = sample_data()
     task = make_task()
-    nodes = [
-        {
-            "name": r.node_id,
-            "cpu_pct": r.resources.cpu_pct,
-            "ram_pct": r.resources.ram_pct,
-            "bandwidth_mbps": r.resources.bandwidth_mbps,
-            "latency_ms": r.resources.latency_ms,
-        }
-        for r in reports
+    feasible = [
+        r.node_id for r in reports if is_feasible(r.resources, task.requirements)
     ]
-    feasible = filter_feasible_nodes(
-        nodes,
-        {
-            "required_cpu_pct": task.requirements.cpu_pct,
-            "required_ram_pct": task.requirements.ram_pct,
-            "min_bandwidth_mbps": task.requirements.min_bandwidth_mbps,
-            "max_latency_ms": task.requirements.max_latency_ms,
-        },
-    )
-    assert [node["name"] for node in feasible] == ["A", "B"]
+    assert feasible == ["A", "B"]
 
+
+def test_feasibility_uses_utilization_headroom():
+    task = make_task()  # needs 20% CPU headroom
+    busy = make_report("busy", 90, 30, 80, 12, 1)
+    idle = make_report("idle", 20, 30, 80, 12, 1)
+    assert not is_feasible(busy.resources, task.requirements)
+    assert is_feasible(idle.resources, task.requirements)
+
+
+def test_scheduler_prefers_idle_node_over_busy_node():
+    task = make_task()
+    reports = [
+        make_report("busy", 90, 30, 80, 12, 1),
+        make_report("idle", 20, 30, 80, 12, 1),
+    ]
+    estimates = [
+        make_estimate("busy", 0.05, 0.05, 0.05, 0.05),
+        make_estimate("idle", 0.05, 0.05, 0.05, 0.05),
+    ]
+    decision = decide(task, reports, estimates)
+    assert decision.selected_node == "idle"
+    assert [c.node_id for c in decision.ranked_candidates] == ["idle"]
+
+
+def test_scheduler_decision_is_deterministic():
+    reports, estimates = sample_data()
+    first = decide(make_task(), reports, estimates)
+    second = decide(make_task(), reports, estimates)
+    assert first.model_dump() == second.model_dump()
 
 def test_task_risk_uses_task_weights():
     reports, estimates = sample_data()

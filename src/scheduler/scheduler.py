@@ -1,5 +1,4 @@
 import math
-from datetime import datetime, timezone
 
 from src.common.schemas import (
     PlacementDecision,
@@ -9,6 +8,7 @@ from src.common.schemas import (
     Task,
 )
 from src.scheduler.cost import calculate_cost
+from src.scheduler.feasibility import is_feasible
 from src.scheduler.risk import calculate_task_risk
 
 
@@ -19,6 +19,7 @@ def decide(
     risk_limit: float = 1.0,
     lambda_value: float = 2.0,
     performance_weights: dict[str, float] | None = None,
+    decision_time: str | None = None,
 ) -> PlacementDecision:
     if (
         not math.isfinite(risk_limit)
@@ -72,13 +73,7 @@ def decide(
                     f"for node '{report.node_id}'"
                 )
 
-        if (
-            resources.cpu_pct < requirements.cpu_pct
-            or resources.ram_pct < requirements.ram_pct
-            or resources.bandwidth_mbps
-            < requirements.min_bandwidth_mbps
-            or resources.latency_ms > requirements.max_latency_ms
-        ):
+        if not is_feasible(resources, requirements):
             continue
 
         estimate = estimate_by_node.get(report.node_id)
@@ -165,7 +160,7 @@ def decide(
     return PlacementDecision(
         task_id=task.task_id,
         selected_node=selected["node_id"],
-        decision_timestamp=datetime.now(timezone.utc).isoformat(),
+        decision_timestamp=decision_time or task.arrival_time,
         performance_cost=selected["performance_cost"],
         decision_risk=selected["decision_risk"],
         **{"lambda": lambda_value},
